@@ -36,9 +36,13 @@ def create_customer(data: CustomerCreate, db: Session = Depends(get_db)):
 def list_customers(
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
+    search: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    stmt = select(Customer).order_by(Customer.id).offset((page - 1) * per_page).limit(per_page)
+    stmt = select(Customer)
+    if search:
+        stmt = stmt.where(Customer.name.ilike(f"%{search}%"))
+    stmt = stmt.order_by(Customer.id).offset((page - 1) * per_page).limit(per_page)
     return db.scalars(stmt).all()
 
 
